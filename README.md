@@ -1,81 +1,159 @@
 # Beyond Edge Auth Service
 
-This is the authentication service for the Beyond Edge application. It provides user registration, login, and token-based authentication using FastAPI and PostgreSQL.
+A modern, edge-computing ready authentication service built with FastAPI and Python.
 
 ## Features
 
-- User registration with email and password
-- JWT-based authentication
-- PostgreSQL database integration
-- Async database operations
-- CORS support for frontend integration
+- 🔐 JWT-based authentication
+- 👤 User registration and management
+- 🔑 Secure password handling with bcrypt
+- 📧 Email verification system
+- 🔄 Password reset functionality
+- 🛡️ Rate limiting and security features
+- 📝 OpenAPI documentation
+- 🧪 Comprehensive test suite
 
 ## Prerequisites
 
 - Python 3.8+
-- PostgreSQL database
-- Virtual environment (recommended)
+- PostgreSQL
+- Redis (for rate limiting)
 
-## Setup
+## Installation
 
-1. Create and activate a virtual environment:
+1. Clone the repository:
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+git clone https://github.com/Atashnezhad/beyond-edge-auth-service.git
+cd beyond-edge-auth-service
 ```
 
-2. Install dependencies:
+2. Create and activate a virtual environment:
+```bash
+# Windows
+python -m venv venv
+.\venv\Scripts\activate
+
+# Linux/MacOS
+python3 -m venv venv
+source venv/bin/activate
+```
+
+3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Set up environment variables:
-Create a `.env` file in the root directory with the following variables:
+4. Set up environment variables:
+```bash
+# Copy the example env file
+cp .env.example .env
+
+# Edit .env with your configuration
 ```
-DATABASE_URL=postgresql+asyncpg://user:password@localhost/dbname
-SECRET_KEY=your-secret-key-here
+
+## Configuration
+
+Create a `.env` file with the following variables:
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+REDIS_URL=redis://localhost:6379
+SECRET_KEY=your-secret-key
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-specific-password
 ```
 
-4. Initialize the database:
-```bash
-alembic upgrade head
-```
+## Running the Application
 
-## Running the Service
-
-Start the service with:
+1. Start the server:
 ```bash
 uvicorn app.main:app --reload
 ```
 
-The service will be available at `http://localhost:8000`
+2. Stop the server:
+```bash
+# Windows
+.\kill_server.bat
+
+# Linux/MacOS
+pkill -f uvicorn
+```
+
+The API will be available at `http://localhost:8000`
 
 ## API Documentation
 
-Once the service is running, you can access:
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 
-## API Endpoints
-
-- `POST /auth/register` - Register a new user
-- `POST /auth/token` - Login and get access token
-- `GET /auth/users/me` - Get current user information
-
 ## Development
 
-The project structure follows a modular design:
-- `app/models/` - Pydantic models for request/response
-- `app/services/` - Business logic
-- `app/database/` - Database configuration and models
-- `app/routers/` - API endpoints
-- `app/main.py` - Application entry point
+### Running Tests
+```bash
+pytest
+```
 
-## Security Considerations
+### Code Style
+This project uses:
+- Black for code formatting
+- Flake8 for linting
+- MyPy for type checking
 
-- Passwords are hashed using bcrypt
-- JWT tokens are used for authentication
-- CORS is configured for frontend integration
-- Environment variables for sensitive data 
+Run formatting:
+```bash
+black .
+```
+
+Run linting:
+```bash
+flake8
+```
+
+Run type checking:
+```bash
+mypy .
+```
+
+## Project Structure
+
+```
+beyond-edge-auth-service/
+├── app/
+│   ├── api/
+│   │   └── v1/
+│   │       ├── auth.py
+│   │       └── users.py
+│   ├── core/
+│   │   ├── config.py
+│   │   └── security.py
+│   ├── db/
+│   │   ├── base.py
+│   │   └── session.py
+│   ├── models/
+│   │   └── user.py
+│   ├── schemas/
+│   │   └── user.py
+│   └── main.py
+├── tests/
+├── alembic/
+├── .env.example
+├── .gitignore
+├── kill_server.bat
+├── requirements.txt
+└── README.md
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details. 
