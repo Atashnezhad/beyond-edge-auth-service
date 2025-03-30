@@ -31,7 +31,13 @@ target_metadata = Base.metadata
 # ... etc.
 
 def get_url():
-    return os.getenv("DATABASE_URL")
+    url = os.getenv("DATABASE_URL")
+    if not url:
+        raise ValueError(
+            "DATABASE_URL environment variable is not set. "
+            "Please set it in your .env file or environment."
+        )
+    return url
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
