@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, select
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 from datetime import datetime
 
@@ -24,12 +24,18 @@ class PostgresDatabase(DatabaseInterface):
     def __init__(self, database_url: str):
         self.database_url = database_url
         self.engine = None
-        self.SessionLocal = None
+        self.async_session = None
 
     async def connect(self) -> None:
-        self.engine = create_async_engine(self.database_url)
-        self.SessionLocal = sessionmaker(
-            self.engine, class_=AsyncSession, expire_on_commit=False
+        self.engine = create_async_engine(
+            self.database_url,
+            echo=False,
+            future=True
+        )
+        self.async_session = async_sessionmaker(
+            self.engine,
+            class_=AsyncSession,
+            expire_on_commit=False
         )
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
@@ -39,7 +45,7 @@ class PostgresDatabase(DatabaseInterface):
             await self.engine.dispose()
 
     async def create_user(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
-        async with self.SessionLocal() as session:
+        async with self.async_session() as session:
             now = datetime.utcnow()
             user = User(
                 email=user_data["email"],
@@ -60,7 +66,7 @@ class PostgresDatabase(DatabaseInterface):
             }
 
     async def get_user_by_email(self, email: str) -> Optional[Dict[str, Any]]:
-        async with self.SessionLocal() as session:
+        async with self.async_session() as session:
             result = await session.execute(select(User).filter(User.email == email))
             user = result.scalar_one_or_none()
             if user:
@@ -75,7 +81,7 @@ class PostgresDatabase(DatabaseInterface):
             return None
 
     async def get_user_by_id(self, user_id: int) -> Optional[Dict[str, Any]]:
-        async with self.SessionLocal() as session:
+        async with self.async_session() as session:
             result = await session.execute(select(User).filter(User.id == user_id))
             user = result.scalar_one_or_none()
             if user:
@@ -89,13 +95,13 @@ class PostgresDatabase(DatabaseInterface):
             return None
 
     async def update_user(self, user_id: int, user_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        async with self.SessionLocal() as session:
+        async with self.async_session() as session:
             result = await session.execute(select(User).filter(User.id == user_id))
             user = result.scalar_one_or_none()
             if user:
                 for key, value in user_data.items():
                     setattr(user, key, value)
-                user.updated_at = datetime.utcnow()  # Update the timestamp
+                user.updated_at = datetime.utcnow()
                 await session.commit()
                 await session.refresh(user)
                 return {
@@ -108,7 +114,7 @@ class PostgresDatabase(DatabaseInterface):
             return None
 
     async def delete_user(self, user_id: int) -> bool:
-        async with self.SessionLocal() as session:
+        async with self.async_session() as session:
             result = await session.execute(select(User).filter(User.id == user_id))
             user = result.scalar_one_or_none()
             if user:
@@ -118,7 +124,7 @@ class PostgresDatabase(DatabaseInterface):
             return False
 
     async def list_users(self) -> List[Dict[str, Any]]:
-        async with self.SessionLocal() as session:
+        async with self.async_session() as session:
             result = await session.execute(select(User))
             users = result.scalars().all()
             return [
