@@ -15,6 +15,11 @@ def get_database_url() -> str:
         database_url = os.getenv("DATABASE_URL")
     if not database_url:
         raise ValueError("No database URL found in environment variables")
+    
+    # Ensure we're using asyncpg as the driver
+    if database_url.startswith("postgresql://"):
+        database_url = database_url.replace("postgresql://", "postgresql+asyncpg://")
+    
     return database_url
 
 # Initialize database
