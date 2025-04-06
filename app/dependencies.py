@@ -19,7 +19,12 @@ def get_database_url() -> str:
     # Ensure we're using asyncpg as the driver
     if database_url.startswith("postgresql://"):
         database_url = database_url.replace("postgresql://", "postgresql+asyncpg://")
-    
+
+    if "sslmode" not in database_url:
+        database_url += "?sslmode=require"
+        
+    print("Connecting to DB:", database_url)
+
     return database_url
 
 # Initialize database
