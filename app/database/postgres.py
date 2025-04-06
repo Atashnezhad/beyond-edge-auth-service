@@ -29,7 +29,7 @@ class PostgresDatabase(DatabaseInterface):
     async def connect(self) -> None:
         self.engine = create_async_engine(
             self.database_url,
-            echo=False,
+            echo=True,
             future=True
         )
         self.async_session = async_sessionmaker(
